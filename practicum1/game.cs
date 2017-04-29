@@ -26,7 +26,7 @@ namespace Template {
         }
        
         public class quad {
-           public vec2 tl;
+            public vec2 tl;
             public vec2 tr;
             public vec2 bl;
             public vec2 br;
@@ -64,30 +64,30 @@ namespace Template {
         public void Tick()
         {
             screen.Clear(0);
-            a += 0.05f;
+            a += 0.0005f;
 
-            screen.Line(220, 100, 420, 100, 0xffffff);
-            screen.Line(220, 100, 220, 300, 0xffffff);
-            screen.Line(420, 100, 420, 300, 0xffffff);
-            screen.Line(220, 300, 420, 300, 0xffffff);
+            screen.Line(220, 100, 420, 100, 0x00ffff);
+            screen.Line(220, 100, 220, 300, 0x00ffff);
+            screen.Line(420, 100, 420, 300, 0x00ffff);
+            screen.Line(220, 300, 420, 300, 0x00ffff);
             b.rotate(a);
             for (int i = 0;i<2;i++)
             {
-                screen.Line(TX(b.tl.x), TY(b.tl.y), TX(b.tr.x), TY(b.tr.y), 0xffffff);
-                screen.Line(TX(b.tr.x), TY(b.tr.y), TX(b.br.x), TY(b.br.y), 0xffffff);
-                screen.Line(TX(b.br.x), TY(b.br.y), TX(b.bl.x), TY(b.bl.y), 0xffffff);
+                screen.Line(TX(b.tl.x), TY(b.tl.y), TX(b.tr.x), TY(b.tr.y), 0xff0000);
+                screen.Line(TX(b.tr.x), TY(b.tr.y), TX(b.br.x), TY(b.br.y), 0x00ff00);
+                screen.Line(TX(b.br.x), TY(b.br.y), TX(b.bl.x), TY(b.bl.y), 0x0000ff);
                 screen.Line(TX(b.bl.x), TY(b.bl.y), TX(b.tl.x), TY(b.tl.y), 0xffffff);
             }
         }
 
         public int TX(float x)
         {
-            return (int)((x + 1.0f) * screen.width/2);
+            return (int)((x + 1.0f) * (screen.width/4));
         }
 
         public int TY(float y)
         {
-            return (int)((-y + 1.0f) * screen.height/2);
+            return (int)((-y + 1.0f) * (screen.width*(screen.width/screen.height) /4 ));
         }
 
 
