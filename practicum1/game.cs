@@ -21,9 +21,10 @@ namespace Template {
 
             for(int i = x; i < 256 + x; i++)
             {
+                int c = i - x;
                 for (int j = y; j < 256 + y; j++)
                 {
-                    screen.pixels[i+ j * screen.width] = 255;
+                    screen.pixels[i+ j * screen.width] = c;
 
                 }
             }
