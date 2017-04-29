@@ -14,9 +14,9 @@ namespace Template {
             public float y;
             public void rotate(float a)
             {
-               
-                 x = (float)(x * Math.Cos(a) - y * Math.Sin(a));
-                 y = (float)(x * Math.Sin(a) + y * Math.Cos(a));
+                float tempx = x;
+                 x = (float)(x * Math.Cos(a) - y * Math.Sin(a) );
+                 y = (float)(tempx * Math.Sin(a) + y * Math.Cos(a) );
             }
             public vec2(float x, float y)
             {
@@ -64,7 +64,7 @@ namespace Template {
         public void Tick()
         {
             screen.Clear(0);
-            a += 0.0005f;
+            a += 0.05f;
 
             screen.Line(220, 100, 420, 100, 0x00ffff);
             screen.Line(220, 100, 220, 300, 0x00ffff);
