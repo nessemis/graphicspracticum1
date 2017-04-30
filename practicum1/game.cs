@@ -7,6 +7,8 @@ namespace Template {
     class Game
     {
         
+        public static int width;
+        public static  int height;
 
         public class vec2
         {
@@ -48,47 +50,63 @@ namespace Template {
                 this.br = br;
                 this.bl = bl;
             }
+            public void draw(Surface screen)
+            {
+                screen.Line(TX(tl.x), TY(tl.y), TX(tr.x), TY(tr.y), 0xff0000);
+                screen.Line(TX(tr.x), TY(tr.y), TX(br.x), TY(br.y), 0x00ff00);
+                screen.Line(TX(br.x), TY(br.y), TX(bl.x), TY(bl.y), 0x0000ff);
+                screen.Line(TX(bl.x), TY(bl.y), TX(tl.x), TY(tl.y), 0xffffff);
+            }
 
-           
+            public int TX(float x)
+            {
+                return (int)((x + 1.0f) * (Game.width / 4));
+            }
+
+            public int TY(float y)
+            {
+                return (int)((-y + 1.0f) * (Game.width * (Game.width / Game.height) / 4));
+            }
+
         }
         // member variables
         public Surface screen;
-        quad b;
+        quad[] b;
         float a = 0;
         // initialize
         public void Init()
         {
-            b = new quad(new vec2(-0.5f, 0.5f), new vec2(0.5f, 0.5f), new vec2(0.5f, -0.5f), new vec2(-0.5f, -0.5f));
+            Game.width = screen.width;
+            Game.height = screen.height;
+            Random rnd = new Random();
+            b = new quad[5];
+            for(int i =0;i<5;i++ )
+
+            b[i] = new quad(new vec2((float)-rnd.NextDouble(), (float)rnd.NextDouble()), new vec2((float)rnd.NextDouble(), (float)rnd.NextDouble()), 
+                new vec2((float)rnd.NextDouble(), -(float)rnd.NextDouble()), new vec2(-(float)rnd.NextDouble(), -(float)rnd.NextDouble()));
+
+           
         }
         // tick: renders one frame
         public void Tick()
         {
+         
             screen.Clear(0);
-            a += 0.05f;
+            a += 0.005f;
 
             screen.Line(220, 100, 420, 100, 0x00ffff);
             screen.Line(220, 100, 220, 300, 0x00ffff);
             screen.Line(420, 100, 420, 300, 0x00ffff);
             screen.Line(220, 300, 420, 300, 0x00ffff);
-            b.rotate(a);
-            for (int i = 0;i<2;i++)
+           
+            for (int i = 0;i<5;i++)
             {
-                screen.Line(TX(b.tl.x), TY(b.tl.y), TX(b.tr.x), TY(b.tr.y), 0xff0000);
-                screen.Line(TX(b.tr.x), TY(b.tr.y), TX(b.br.x), TY(b.br.y), 0x00ff00);
-                screen.Line(TX(b.br.x), TY(b.br.y), TX(b.bl.x), TY(b.bl.y), 0x0000ff);
-                screen.Line(TX(b.bl.x), TY(b.bl.y), TX(b.tl.x), TY(b.tl.y), 0xffffff);
+                b[i].rotate(a);
+                b[i].draw(screen);
             }
         }
 
-        public int TX(float x)
-        {
-            return (int)((x + 1.0f) * (screen.width/4));
-        }
-
-        public int TY(float y)
-        {
-            return (int)((-y + 1.0f) * (screen.width*(screen.width/screen.height) /4 ));
-        }
+    
 
 
     }
