@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using OpenTK.Input;
 
 namespace Template
 {
@@ -58,9 +59,13 @@ namespace Template
                 this.bl = bl;
             }
         }
+
+
         // member variables
         public Surface screen;
         quad b;
+        float zoom = 4f;
+        vec2 camera = new vec2(0.0f, 0.0f);
         float a = 0;
         // initialize
         public void Init()
@@ -72,9 +77,52 @@ namespace Template
         {
             screen.Clear(0);
 
-            a += 0.05f;
+            // a += 0.05f;
+
+            for (int x = 0; x <= screen.width / 32; x++)
+            {
+                screen.Line(0 , x * screen.width / 32 , x*screen.width/32, screen.height , 0xfff000);
+           
+            }
+            for (int y = 0; y <= screen.height / 32; y++)
+            {
+                screen.Line(TX(-2f), TY(2f - y / zoom) , TX(2.0f), TY(2.0f -  y / zoom) , 0xfff000);
+
+            }
+
 
             DrawRotatingQuad(b, a);
+        }
+        public void Input(KeyboardState keyboard)
+        {
+
+           
+            if (keyboard[OpenTK.Input.Key.Z])
+            {
+                zoom += 0.1f;
+            }
+            if (keyboard[OpenTK.Input.Key.X])
+            {
+                zoom -= 0.1f;
+            }
+
+            if (keyboard[OpenTK.Input.Key.Up])
+            {
+                camera.y += 0.1f;
+            }
+            if (keyboard[OpenTK.Input.Key.Down])
+            {
+                camera.y -= 0.1f;
+            }
+            if (keyboard[OpenTK.Input.Key.Left])
+            {
+                camera.x += 0.1f;
+            }
+            if (keyboard[OpenTK.Input.Key.Right])
+            {
+                camera.x -= 0.1f;
+            }
+
         }
 
         public void DrawRotatingQuad(quad q, float angle)
@@ -85,16 +133,19 @@ namespace Template
             screen.Line(TX(rq.tr.x), TY(rq.tr.y), TX(rq.br.x), TY(rq.br.y), 0x00ff00);
             screen.Line(TX(rq.br.x), TY(rq.br.y), TX(rq.bl.x), TY(rq.bl.y), 0x0000ff);
             screen.Line(TX(rq.bl.x), TY(rq.bl.y), TX(rq.tl.x), TY(rq.tl.y), 0xffffff);
+
+
+
         }
 
         public int TX(float x)
         {
-            return (int)((x + 2.0f) * (screen.width / 4));
+            return (int)((x  + 2.0f * zoom / 4.0f + camera.x) * (screen.width / zoom));
         }
 
         public int TY(float y)
         {
-            return (int)(((-y * (screen.width / (float)screen.height) + 2.0f)) * (screen.height / 4));
+            return (int)(((-y  * (screen.width / (float)screen.height) + 2.0f * zoom / 4.0f + camera.y)) * (screen.height / zoom));
         }
 
 
