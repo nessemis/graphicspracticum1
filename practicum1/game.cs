@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Template
 {
@@ -99,4 +99,4 @@ namespace Template
 
 
     }
-} // namespace Template
+}
