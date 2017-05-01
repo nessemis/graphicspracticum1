@@ -18,7 +18,8 @@ namespace Template {
             {
                 float tempx = x;
                  x = (float)(x * Math.Cos(a) - y * Math.Sin(a) );
-                 y = (float)(tempx * Math.Sin(a) + y * Math.Cos(a) );
+                 y = (float)(tempx * Math.Sin(a) + y * Math.Cos(a) );
+
             }
             public vec2(float x, float y)
             {
@@ -98,7 +99,8 @@ namespace Template {
             screen.Line(220, 100, 420, 100, 0x00ffff);
             screen.Line(220, 100, 220, 300, 0x00ffff);
             screen.Line(420, 100, 420, 300, 0x00ffff);
-            screen.Line(220, 300, 420, 300, 0x00ffff);
+            screen.Line(220, 300, 420, 300, 0x00ffff);
+
            
             for (int i = 0;i<5;i++)
             {
