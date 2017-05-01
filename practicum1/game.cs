@@ -80,11 +80,12 @@ namespace Template {
             Game.height = screen.height;
             Random rnd = new Random();
             b = new quad[5];
-            for(int i =0;i<5;i++ )
-
-            b[i] = new quad(new vec2((float)-rnd.NextDouble(), (float)rnd.NextDouble()), new vec2((float)rnd.NextDouble(), (float)rnd.NextDouble()), 
-                new vec2((float)rnd.NextDouble(), -(float)rnd.NextDouble()), new vec2(-(float)rnd.NextDouble(), -(float)rnd.NextDouble()));
-
+            for (int i = 0; i < 5; i++)
+            {
+                float r = (float)rnd.NextDouble();
+                b[i] = new quad(new vec2(-r,r), new vec2(r, r),
+                    new vec2(r, -r), new vec2(-r, -r));
+            }
            
         }
         // tick: renders one frame
@@ -92,7 +93,7 @@ namespace Template {
         {
          
             screen.Clear(0);
-            a += 0.005f;
+            a = 0.005f;
 
             screen.Line(220, 100, 420, 100, 0x00ffff);
             screen.Line(220, 100, 220, 300, 0x00ffff);
