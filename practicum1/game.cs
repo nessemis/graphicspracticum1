@@ -67,6 +67,8 @@ namespace Template
         Surface map;
         float[,] h;
 
+        float[] vertexData;
+
         // initialize
         public void Init()
         {
@@ -75,6 +77,9 @@ namespace Template
             h = new float[128, 128];
             for (int y = 0; y < 128; y++) for (int x = 0; x < 128; x++)
                     h[x, y] = ((float)(map.pixels[x + y * 128] & 255)) / 256;
+
+            vertexData = new float[127 * 127 * 2 * 3 * 3];
+            ReadHeightmapToVertexData();
         }
         // tick: renders one frame
         public void Tick()
@@ -91,11 +96,14 @@ namespace Template
             GL.Translate(0, 0, -1);
             GL.Rotate(110, 1, 0, 0);
             GL.Rotate(a * 180 / Math.PI, 0, 0, 1);
+        }
 
-            GL.Begin(PrimitiveType.Triangles);
+        private void ReadHeightmapToVertexData()
+        {
+            int index = 0;
 
             for (int x = 1; x < h.GetLength(0); x++)
-                for(int y = 1; y < h.GetLength(1); y++)
+                for (int y = 1; y < h.GetLength(1); y++)
                 {
                     float renderXTop = (float)x / 128 - 0.5f;
                     float renderYTop = (float)y / 128 - 0.5f;
@@ -103,20 +111,27 @@ namespace Template
                     float renderXBot = (float)(x - 1) / 128 - 0.5f;
                     float renderYBot = (float)(y - 1) / 128 - 0.5f;
 
-                    DrawVertex(renderXBot, renderYBot, h[x - 1, y - 1]);
-                    DrawVertex(renderXTop, renderYBot, h[x, y - 1]);
-                    DrawVertex(renderXBot, renderYTop, h[x - 1, y]);
-                    DrawVertex(renderXTop, renderYBot, h[x, y - 1]);
-                    DrawVertex(renderXBot, renderYTop, h[x - 1, y]);
-                    DrawVertex(renderXTop, renderYTop, h[x, y]);
+                    ReadVertexToVertexData(renderXBot, renderYBot, h[x - 1, y - 1], index);
+                    index++;
+                    ReadVertexToVertexData(renderXTop, renderYBot, h[x, y - 1], index);
+                    index++;
+                    ReadVertexToVertexData(renderXBot, renderYTop, h[x - 1, y], index);
+                    index++;
+                    ReadVertexToVertexData(renderXTop, renderYBot, h[x, y - 1], index);
+                    index++;
+                    ReadVertexToVertexData(renderXBot, renderYTop, h[x - 1, y], index);
+                    index++;
+                    ReadVertexToVertexData(renderXTop, renderYTop, h[x, y], index);
+                    index++;
                 }
-            GL.End();
+
         }
 
-        private void DrawVertex(float x, float y, float z)
+        private void ReadVertexToVertexData(float x, float y, float z, int index)
         {
-            GL.Color3(z, 0, 0.1f);
-            GL.Vertex3(x, y, -z / 4);
+            vertexData[index * 3] = x;
+            vertexData[index * 3 + 1] = y;
+            vertexData[index * 3 + 2] = z;
         }
     }
 }
