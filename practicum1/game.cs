@@ -1,15 +1,16 @@
-using System;
-using OpenTK.Graphics.OpenGL;
 using OpenTK;
+using OpenTK.Graphics.OpenGL;
+using System;
 
 namespace Template
 {
-    class Game
+    internal class Game
     {
         public struct vec2
         {
             public float x;
             public float y;
+
             public vec2(float x, float y)
             {
                 this.x = x;
@@ -62,12 +63,12 @@ namespace Template
         // member variables
         public Surface screen;
 
-        float a;
+        private float a;
 
-        Surface map;
-        float[,] h;
-
-        float[] vertexData;
+        private Surface map;
+        private float[,] h;
+        private int VBO = 0;
+        private float[] vertexData;
 
         // initialize
         public void Init()
@@ -80,7 +81,13 @@ namespace Template
 
             vertexData = new float[127 * 127 * 2 * 3 * 3];
             ReadHeightmapToVertexData();
+
+            VBO = GL.GenBuffer();            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+
+            GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.DynamicDraw);            GL.EnableClientState(ArrayCap.VertexArray);
+            GL.VertexPointer(3, VertexPointerType.Float, 12, 0);
         }
+
         // tick: renders one frame
         public void Tick()
         {
@@ -96,11 +103,16 @@ namespace Template
             GL.Translate(0, 0, -1);
             GL.Rotate(110, 1, 0, 0);
             GL.Rotate(a * 180 / Math.PI, 0, 0, 1);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
         }
 
         private void ReadHeightmapToVertexData()
         {
             int index = 0;
+
+
 
             for (int x = 1; x < h.GetLength(0); x++)
                 for (int y = 1; y < h.GetLength(1); y++)
@@ -118,14 +130,13 @@ namespace Template
                     ReadVertexToVertexData(renderXBot, renderYTop, h[x - 1, y], index++);
                     ReadVertexToVertexData(renderXTop, renderYTop, h[x, y], index++);
                 }
-
         }
 
         private void ReadVertexToVertexData(float x, float y, float z, int index)
         {
             vertexData[index * 3] = x;
             vertexData[index * 3 + 1] = y;
-            vertexData[index * 3 + 2] = z;
+            vertexData[index * 3 + 2] = -z/4;
         }
     }
 }
