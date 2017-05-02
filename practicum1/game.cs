@@ -125,7 +125,7 @@ namespace Template
         {
             vertexData[index * 3] = x;
             vertexData[index * 3 + 1] = y;
-            vertexData[index * 3 + 2] = z;
+            vertexData[index * 3 + 2] = -z / 4;
         }
     }
 }
