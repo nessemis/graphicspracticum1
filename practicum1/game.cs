@@ -1,4 +1,6 @@
 using System;
+using OpenTK.Graphics.OpenGL;
+using OpenTK;
 
 namespace Template
 {
@@ -60,14 +62,35 @@ namespace Template
         // member variables
         public Surface screen;
 
+        float a;
+
         // initialize
         public void Init()
         {
+            a = 0;
         }
         // tick: renders one frame
         public void Tick()
         {
             screen.Clear(0);
+
+            a += 0.005f;
+        }
+
+        public void RenderGL()
+        {
+            var M = Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
+            GL.LoadMatrix(ref M);
+            GL.Translate(0, 0, -1);
+            GL.Rotate(110, 1, 0, 0);
+            GL.Rotate(a * 180 / Math.PI, 0, 0, 1);
+
+            GL.Color3(1.0f, 0.0f, 0.0f);
+            GL.Begin(PrimitiveType.Triangles);
+            GL.Vertex3(-0.5f, -0.5f, 0);
+            GL.Vertex3(0.5f, -0.5f, 0);
+            GL.Vertex3(-0.5f, 0.5f, 0);
+            GL.End();
         }
     }
 }
