@@ -1,6 +1,7 @@
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
+using System.IO;
 
 namespace Template
 {
@@ -68,6 +69,13 @@ namespace Template
         private Surface map;
         private float[,] h;
         private int VBO = 0;
+        private int programID = 0;
+        private int attribute_vpos = 0;
+        private int attribute_vcol = 0;
+        private int uniform_mview = 0;
+        private int vsID, fsID;
+        private int vbo_pos = 0;
+        private int vbo_col = 0;
         private float[] vertexData;
 
         // initialize
@@ -85,9 +93,43 @@ namespace Template
             VBO = GL.GenBuffer();            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
 
             GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.DynamicDraw);            GL.EnableClientState(ArrayCap.VertexArray);
-            GL.VertexPointer(3, VertexPointerType.Float, 12, 0);
+            GL.VertexPointer(3, VertexPointerType.Float, 12, 0);            programID = GL.CreateProgram();
+            LoadShader("../../shaders/vs.glsl",
+             ShaderType.VertexShader, programID, out vsID);
+            LoadShader("../../shaders/fs.glsl",
+             ShaderType.FragmentShader, programID, out fsID);
+            GL.LinkProgram(programID);
+            attribute_vpos = GL.GetAttribLocation(programID, "vPosition");
+            attribute_vcol = GL.GetAttribLocation(programID, "vColor");
+            uniform_mview = GL.GetUniformLocation(programID, "M");            vbo_pos = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos);
+            GL.BufferData<float>(BufferTarget.ArrayBuffer,
+             (IntPtr)(vertexData.Length * 4),
+            vertexData, BufferUsageHint.StaticDraw
+             );
+            GL.VertexAttribPointer(attribute_vpos, 3,
+             VertexAttribPointerType.Float,
+            false, 0, 0
+             );            vbo_col = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos);
+            GL.BufferData<float>(BufferTarget.ArrayBuffer,
+             (IntPtr)(vertexData.Length * 4),
+            vertexData, BufferUsageHint.StaticDraw
+             );
+            GL.VertexAttribPointer(attribute_vcol, 3,
+             VertexAttribPointerType.Float,
+            false, 0, 0
+             );
         }
-
+        void LoadShader(String name, ShaderType type, int program, out int ID)
+        {
+            ID = GL.CreateShader(type);
+            using (StreamReader sr = new StreamReader(name))
+                GL.ShaderSource(ID, sr.ReadToEnd());
+            GL.CompileShader(ID);
+            GL.AttachShader(program, ID);
+            Console.WriteLine(GL.GetShaderInfoLog(ID));
+        }
         // tick: renders one frame
         public void Tick()
         {
@@ -98,11 +140,16 @@ namespace Template
 
         public void RenderGL()
         {
-            var M = Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
-            GL.LoadMatrix(ref M);
-            GL.Translate(0, 0, -1);
-            GL.Rotate(110, 1, 0, 0);
-            GL.Rotate(a * 180 / Math.PI, 0, 0, 1);
+            Matrix4 M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
+            M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), 1.9f);
+            M *= Matrix4.CreateTranslation(0, 0, -1);
+            M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
+            GL.UseProgram(programID);
+            GL.UniformMatrix4(uniform_mview, false, ref M);
+
+            GL.EnableVertexAttribArray(attribute_vpos);
+            GL.EnableVertexAttribArray(attribute_vcol);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
