@@ -5,8 +5,6 @@ namespace Template
 {
     class Game
     {
-
-
         public struct vec2
         {
             public float x;
@@ -60,94 +58,160 @@ namespace Template
             }
         }
 
-
         // member variables
         public Surface screen;
-        quad b;
-        float zoom = 4f;
-        vec2 camera = new vec2(0.0f, 0.0f);
-        float a = 0;
+
+        public vec2 camera;
+
+        public float xDiameter;
+
+        private float xRadius
+        {
+            get
+            {
+                return xDiameter / 2;
+            }
+        }
+
+        public float yDiameter
+        {
+            get
+            {
+                return screen.height / (float)screen.width * xDiameter;
+            }
+        }
+
+        private float yRadius
+        {
+            get
+            {
+                return yDiameter / 2;
+            }
+        }
+
+        private float xMin
+        {
+            get
+            {
+                return -camera.x - xRadius;
+            }
+        }
+
+        private float xMax
+        {
+            get
+            {
+                return -camera.x + xRadius;
+            }
+        }
+
+        private float yMin
+        {
+            get
+            {
+                return -camera.y - yRadius;
+            }
+        }
+
+        private float yMax
+        {
+            get
+            {
+                return -camera.y + yRadius;
+            }
+        }
+
         // initialize
         public void Init()
         {
-            b = new quad(new vec2(-0.5f, 0.5f), new vec2(0.5f, 0.5f), new vec2(0.5f, -0.5f), new vec2(-0.5f, -0.5f));
+            camera = vec2.Origin;
+
+            xDiameter = 4;
         }
         // tick: renders one frame
         public void Tick()
         {
             screen.Clear(0);
 
-            // a += 0.05f;
+            DrawAxes();
 
-            for (int x = 0; x <= screen.width / 32; x++)
-            {
-                screen.Line(0 , x * screen.width / 32 , x*screen.width/32, screen.height , 0xfff000);
-           
-            }
-            for (int y = 0; y <= screen.height / 32; y++)
-            {
-                screen.Line(TX(-2f), TY(2f - y / zoom) , TX(2.0f), TY(2.0f -  y / zoom) , 0xfff000);
+            PrintLabels();
 
-            }
-
-
-            DrawRotatingQuad(b, a);
+            PlotGraph();
         }
+
         public void Input(KeyboardState keyboard)
         {
 
-           
             if (keyboard[OpenTK.Input.Key.Z])
             {
-                zoom += 0.1f;
+                xDiameter *= 1.1f;
             }
             if (keyboard[OpenTK.Input.Key.X])
             {
-                zoom -= 0.1f;
+                xDiameter *= 0.9f;
             }
 
             if (keyboard[OpenTK.Input.Key.Up])
             {
-                camera.y += 0.1f;
+                camera.y += 0.01f * xDiameter;
             }
             if (keyboard[OpenTK.Input.Key.Down])
             {
-                camera.y -= 0.1f;
+                camera.y -= 0.01f * xDiameter;
             }
             if (keyboard[OpenTK.Input.Key.Left])
             {
-                camera.x += 0.1f;
+                camera.x += 0.01f * xDiameter;
             }
             if (keyboard[OpenTK.Input.Key.Right])
             {
-                camera.x -= 0.1f;
+                camera.x -= 0.01f * xDiameter;
             }
-
         }
 
-        public void DrawRotatingQuad(quad q, float angle)
+        public void PlotGraph()
         {
-            quad rq = q.rotate(angle, vec2.Origin);
+            for (int i = 0; i < screen.width; i += 1)
+            {
+                DrawPixel(i, TY(Function(i / (float)screen.width * xDiameter + xMin)));
+            }
+        }
 
-            screen.Line(TX(rq.tl.x), TY(rq.tl.y), TX(rq.tr.x), TY(rq.tr.y), 0xff0000);
-            screen.Line(TX(rq.tr.x), TY(rq.tr.y), TX(rq.br.x), TY(rq.br.y), 0x00ff00);
-            screen.Line(TX(rq.br.x), TY(rq.br.y), TX(rq.bl.x), TY(rq.bl.y), 0x0000ff);
-            screen.Line(TX(rq.bl.x), TY(rq.bl.y), TX(rq.tl.x), TY(rq.tl.y), 0xffffff);
+        private void DrawPixel(int x, int y)
+        {
+            if (x > 0 && x < screen.width && y > 0 && y < screen.height)
+                screen.pixels[x + y * screen.width] = 0xFFFFFF;
+        }
 
+        public void DrawAxes()
+        {
+            screen.Line(0, TY(0), screen.width, TY(0), 0xF4A460);
+            screen.Line(TX(0), 0, TX(0), screen.height, 0xF4A460);
+        }
 
+        public void PrintLabels()
+        {
+            screen.Print("" + xMin, 20, 0, 0xD3D3D);
+            screen.Print("" + camera.x, screen.width / 2, 0, 0xD3D3D);
 
+            screen.Print("" + yMin, 0, 20, 0xD3D3D);
+            screen.Print("" + camera.y, 0, screen.height / 2, 0xD3D3D);
+        }
+
+        public float Function(float x)
+        {
+            return (float) Math.Log(x) / 8;
         }
 
         public int TX(float x)
         {
-            return (int)((x  + 2.0f * zoom / 4.0f + camera.x) * (screen.width / zoom));
+            return (int)(((x - xMin) / xDiameter) * screen.width);
         }
 
         public int TY(float y)
         {
-            return (int)(((-y  * (screen.width / (float)screen.height) + 2.0f * zoom / 4.0f + camera.y)) * (screen.height / zoom));
+            return (int) Math.Round(((-y - yMin) / yDiameter) * screen.height);
         }
-
-
     }
 }
