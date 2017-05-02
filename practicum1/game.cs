@@ -64,10 +64,17 @@ namespace Template
 
         float a;
 
+        Surface map;
+        float[,] h;
+
         // initialize
         public void Init()
         {
             a = 0;
+            map = new Surface("../../assets/heightmap.png");
+            h = new float[128, 128];
+            for (int y = 0; y < 128; y++) for (int x = 0; x < 128; x++)
+                    h[x, y] = ((float)(map.pixels[x + y * 128] & 255)) / 256;
         }
         // tick: renders one frame
         public void Tick()
@@ -85,12 +92,31 @@ namespace Template
             GL.Rotate(110, 1, 0, 0);
             GL.Rotate(a * 180 / Math.PI, 0, 0, 1);
 
-            GL.Color3(1.0f, 0.0f, 0.0f);
             GL.Begin(PrimitiveType.Triangles);
-            GL.Vertex3(-0.5f, -0.5f, 0);
-            GL.Vertex3(0.5f, -0.5f, 0);
-            GL.Vertex3(-0.5f, 0.5f, 0);
+
+            for (int x = 1; x < h.GetLength(0); x++)
+                for(int y = 1; y < h.GetLength(1); y++)
+                {
+                    float renderXTop = (float)x / 128 - 0.5f;
+                    float renderYTop = (float)y / 128 - 0.5f;
+
+                    float renderXBot = (float)(x - 1) / 128 - 0.5f;
+                    float renderYBot = (float)(y - 1) / 128 - 0.5f;
+
+                    DrawVertex(renderXBot, renderYBot, h[x - 1, y - 1]);
+                    DrawVertex(renderXTop, renderYBot, h[x, y - 1]);
+                    DrawVertex(renderXBot, renderYTop, h[x - 1, y]);
+                    DrawVertex(renderXTop, renderYBot, h[x, y - 1]);
+                    DrawVertex(renderXBot, renderYTop, h[x - 1, y]);
+                    DrawVertex(renderXTop, renderYTop, h[x, y]);
+                }
             GL.End();
+        }
+
+        private void DrawVertex(float x, float y, float z)
+        {
+            GL.Color3(z, 0, 0.1f);
+            GL.Vertex3(x, y, -z / 4);
         }
     }
 }
