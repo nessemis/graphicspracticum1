@@ -111,18 +111,12 @@ namespace Template
                     float renderXBot = (float)(x - 1) / 128 - 0.5f;
                     float renderYBot = (float)(y - 1) / 128 - 0.5f;
 
-                    ReadVertexToVertexData(renderXBot, renderYBot, h[x - 1, y - 1], index);
-                    index++;
-                    ReadVertexToVertexData(renderXTop, renderYBot, h[x, y - 1], index);
-                    index++;
-                    ReadVertexToVertexData(renderXBot, renderYTop, h[x - 1, y], index);
-                    index++;
-                    ReadVertexToVertexData(renderXTop, renderYBot, h[x, y - 1], index);
-                    index++;
-                    ReadVertexToVertexData(renderXBot, renderYTop, h[x - 1, y], index);
-                    index++;
-                    ReadVertexToVertexData(renderXTop, renderYTop, h[x, y], index);
-                    index++;
+                    ReadVertexToVertexData(renderXBot, renderYBot, h[x - 1, y - 1], index++);
+                    ReadVertexToVertexData(renderXTop, renderYBot, h[x, y - 1], index++);
+                    ReadVertexToVertexData(renderXBot, renderYTop, h[x - 1, y], index++);
+                    ReadVertexToVertexData(renderXTop, renderYBot, h[x, y - 1], index++);
+                    ReadVertexToVertexData(renderXBot, renderYTop, h[x - 1, y], index++);
+                    ReadVertexToVertexData(renderXTop, renderYTop, h[x, y], index++);
                 }
 
         }
