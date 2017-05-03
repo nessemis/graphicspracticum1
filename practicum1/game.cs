@@ -103,23 +103,11 @@ namespace Template
             attribute_vcol = GL.GetAttribLocation(programID, "vColor");
             uniform_mview = GL.GetUniformLocation(programID, "M");            vbo_pos = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos);
-            GL.BufferData<float>(BufferTarget.ArrayBuffer,
-             (IntPtr)(vertexData.Length * 4),
-            vertexData, BufferUsageHint.StaticDraw
-             );
-            GL.VertexAttribPointer(attribute_vpos, 3,
-             VertexAttribPointerType.Float,
-            false, 0, 0
-             );            vbo_col = GL.GenBuffer();
+            GL.BufferData<float>(BufferTarget.ArrayBuffer,      (IntPtr)(vertexData.Length * 4),  vertexData, BufferUsageHint.StaticDraw   );
+            GL.VertexAttribPointer(attribute_vpos, 3, VertexAttribPointerType.Float,false, 0, 0 );            vbo_col = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos);
-            GL.BufferData<float>(BufferTarget.ArrayBuffer,
-             (IntPtr)(vertexData.Length * 4),
-            vertexData, BufferUsageHint.StaticDraw
-             );
-            GL.VertexAttribPointer(attribute_vcol, 3,
-             VertexAttribPointerType.Float,
-            false, 0, 0
-             );
+            GL.BufferData<float>(BufferTarget.ArrayBuffer,(IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.StaticDraw  );
+            GL.VertexAttribPointer(attribute_vcol, 3,  VertexAttribPointerType.Float,   false, 0, 0     );
         }
         void LoadShader(String name, ShaderType type, int program, out int ID)
         {

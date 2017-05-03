@@ -6,5 +6,5 @@ uniform mat4 M;
 void main()
 {
  gl_Position = M * vec4( vPosition, 1.0 );
- color = vec4( vColor, 1.0);
+ color = vec4( -vPosition.z/4.0f, -vPosition.z/2.0f, -vPosition.z, 1.0);
 }
