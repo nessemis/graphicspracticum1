@@ -78,6 +78,10 @@ namespace Template
 
         private void InitOpenGL()
         {
+            VBO = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.StaticDraw);
+
             programID = GL.CreateProgram();
             LoadShader("../../shaders/vs.glsl",
              ShaderType.VertexShader, programID, out vsID);
@@ -90,18 +94,15 @@ namespace Template
             uniform_mview = GL.GetUniformLocation(programID, "M");
 
             vbo_pos = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos);
-            GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.StaticDraw);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.VertexAttribPointer(attribute_vpos, 3, VertexAttribPointerType.Float, false, 24, 0);
 
             vbo_norm = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_norm);
-            GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.StaticDraw);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.VertexAttribPointer(attribute_vnorm, 3, VertexAttribPointerType.Float, false, 24, 12);
 
             vbo_col = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_col);
-            GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.StaticDraw);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.VertexAttribPointer(attribute_vcol, 3, VertexAttribPointerType.Float, false, 24, 12);
         }
 
