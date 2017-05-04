@@ -19,12 +19,15 @@ namespace Template
         private int attribute_vcol = 0;
         private int attribute_vnorm = 0;
         private int uniform_mview = 0;
+        private int uniform_sview = 0;
         private int vsID, fsID;
         private int vbo_pos = 0;
         private int vbo_norm = 0;
         private int vbo_col = 0;
 
         private Matrix4 NormalizationMatrix;
+
+        private Matrix4 ScaleMatrix;
 
         private float[] vertexData;
 
@@ -36,6 +39,8 @@ namespace Template
             vertexData = HeightmapConverter.GetVertexData();
 
             CreateNormalizationMatrix();
+
+            CreateScaleMatrix();
 
             InitOpenGL();
         }
@@ -65,7 +70,6 @@ namespace Template
             M *= Matrix4.CreateTranslation(0, 0, -1);
             M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
 
-            GL.UseProgram(programID);
             GL.UniformMatrix4(uniform_mview, false, ref M);
 
             GL.EnableVertexAttribArray(attribute_vpos);
@@ -92,6 +96,11 @@ namespace Template
             attribute_vnorm = GL.GetAttribLocation(programID, "vNormal");
             attribute_vcol = GL.GetAttribLocation(programID, "vColor");
             uniform_mview = GL.GetUniformLocation(programID, "M");
+            uniform_sview = GL.GetUniformLocation(programID, "S");
+
+            GL.UseProgram(programID);
+
+            GL.UniformMatrix4(uniform_sview, false, ref ScaleMatrix);
 
             vbo_pos = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
@@ -103,13 +112,17 @@ namespace Template
 
             vbo_col = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            GL.VertexAttribPointer(attribute_vcol, 3, VertexAttribPointerType.Float, false, 24, 12);
+            GL.VertexAttribPointer(attribute_vcol, 3, VertexAttribPointerType.Float, false, 24, 0);
         }
 
         private void CreateNormalizationMatrix()
         {
-            NormalizationMatrix = Matrix4.CreateScale(1 / 128f, 1 / 128f, -1 / 4f);
-            NormalizationMatrix *= Matrix4.CreateTranslation(-0.5f, -0.5f, 0);
+            NormalizationMatrix = Matrix4.CreateTranslation(-0.5f, -0.5f, 0);
+        }
+
+        private void CreateScaleMatrix()
+        {
+            ScaleMatrix = Matrix4.CreateScale(1 / 128f, 1 / 128f, -1 / 4f);
         }
     }
 
@@ -182,9 +195,9 @@ namespace Template
             vertexData[index * 6] = x;
             vertexData[index * 6 + 1] = y;
             vertexData[index * 6 + 2] = z;
-            vertexData[index * 6 + 3] = x;
-            vertexData[index * 6 + 4] = y;
-            vertexData[index * 6 + 5] = z;
+            vertexData[index * 6 + 3] = normalVertex.X;
+            vertexData[index * 6 + 4] = normalVertex.Y;
+            vertexData[index * 6 + 5] = normalVertex.Z;
         }
 
         private static Vector3 CalculateVertexNormal(int x, int y)
