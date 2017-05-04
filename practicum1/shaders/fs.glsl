@@ -4,5 +4,5 @@ in vec4 normal;
 out vec4 outputColor;
 void main()
 {
- outputColor = color;
+ outputColor = color * dot(normal, vec4(0, 0, -1, 0));
 }

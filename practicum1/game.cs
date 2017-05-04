@@ -74,10 +74,8 @@ namespace Template
 
             GL.EnableVertexAttribArray(attribute_vpos);
             GL.EnableVertexAttribArray(attribute_vcol);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.EnableVertexAttribArray(attribute_vnorm);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
-
-
         }
 
         private void InitOpenGL()
@@ -207,10 +205,10 @@ namespace Template
 
         private static Vector3 GetAdjacentTriangleSum(int x, int y, List<Vector3> adjacentVertexes)
         {
-            int adjacentTriangleCount = 4;
+            int adjacentTriangleCount = adjacentVertexes.Count;
 
-            if (adjacentVertexes.Count != 4)
-                adjacentTriangleCount = adjacentVertexes.Count - 1;
+            if (adjacentTriangleCount == 2)
+                adjacentTriangleCount = adjacentTriangleCount - 1;
 
             Vector3 adjacentSum = Vector3.Zero;
 
@@ -219,9 +217,11 @@ namespace Template
             for (int i = 0; i < adjacentTriangleCount; i++)
             {
                 Vector3 v2 = adjacentVertexes[i];
-                Vector3 v3 = adjacentVertexes[(i + 1) % 4];
+                Vector3 v3 = adjacentVertexes[(i + 1) % adjacentVertexes.Count];
 
-                adjacentSum += new Triangle(v1, v2, v3).SurfaceNormal;
+                Vector3 triangleNormal = new Triangle(v1, v2, v3).SurfaceNormal;
+                if(!float.IsNaN(triangleNormal.X + triangleNormal.Y + triangleNormal.Z))
+                    adjacentSum += triangleNormal;
             }
 
             return Vector3.Normalize(adjacentSum);
@@ -230,17 +230,16 @@ namespace Template
         private static List<Vector3> GetAdjacentVectors(int x, int y)
         {
             List<Vector3> adjacentVertexes = new List<Vector3>();
-            for (int dx = -1; dx < 2; dx += 2)
-                for (int dy = -1; dy < 2; dy += 2)
-                {
-                    uint xLoc = (uint)(x + dx);
-                    uint yLoc = (uint)(y + dy);
+            for (int di = -1; di < 3; di++)
+            {
+                uint xLoc = (uint) (x + (di % 2));
+                uint yLoc = (uint) (y + (di - 1) % 2);
 
-                    if (xLoc < h.GetLength(0) && yLoc < h.GetLength(1))
-                    {
-                        adjacentVertexes.Add(new Vector3(xLoc, yLoc, h[xLoc, yLoc]));
-                    }
+                if (xLoc < h.GetLength(0) && yLoc < h.GetLength(1))
+                {
+                    adjacentVertexes.Add(new Vector3(xLoc, yLoc, h[xLoc, yLoc]));
                 }
+            }
             return adjacentVertexes;
         }
     }

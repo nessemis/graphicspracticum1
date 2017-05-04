@@ -9,6 +9,6 @@ uniform mat4 S;
 void main()
 {
  gl_Position = M * S * vec4( vPosition, 1.0 );
- color = S * vec4((vPosition.x + vPosition.y) / 2 - 16.0 * vPosition.z, (vPosition.x + vPosition.y) / 2 - 16.0 * vPosition.z, -8.0 * vPosition.z , 1.0 );
- normal = normal;
+ color = vec4(1.0, 1.0, 1.0 , 1.0);
+ normal = normalize(vec4(vNormal.x, vNormal.y, vNormal.z, 0) * inverse(S));
 }
