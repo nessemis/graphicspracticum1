@@ -11,24 +11,32 @@ namespace Template
         // member variables
         public Surface screen;
 
+        //angle the landscape is rotated.
         private float a;
 
+        //memory location where all the information is in the gpu.
         private int VBO = 0;
         private int programID = 0;
+
         private int attribute_vpos = 0;
         private int attribute_vcol = 0;
         private int attribute_vnorm = 0;
+
         private int uniform_mview = 0;
         private int uniform_sview = 0;
+
         private int vsID, fsID;
         private int vbo_pos = 0;
         private int vbo_norm = 0;
         private int vbo_col = 0;
 
-        private Matrix4 NormalizationMatrix;
-
+        //matrix that scales the landscape to be displayed properly
         private Matrix4 ScaleMatrix;
 
+        //matrix that transforms the scaled landscape to the center of the screen.
+        private Matrix4 TransformationMatrix;
+
+        //data send to the gpu, contains both position and the normal vector.
         private float[] vertexData;
 
         // initialize
@@ -38,7 +46,7 @@ namespace Template
 
             vertexData = HeightmapConverter.GetVertexData();
 
-            CreateNormalizationMatrix();
+            CreateTransformationMatrix();
 
             CreateScaleMatrix();
 
@@ -62,9 +70,10 @@ namespace Template
             a += 0.005f;
         }
 
+        //renders the landscape
         public void RenderGL()
         {
-            Matrix4 M = NormalizationMatrix;
+            Matrix4 M = TransformationMatrix;
             M *= Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
             M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), 1.9f);
             M *= Matrix4.CreateTranslation(0, 0, -1);
@@ -80,16 +89,20 @@ namespace Template
 
         private void InitOpenGL()
         {
+            //creates the buffer in which we store the vertexData.
             VBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.StaticDraw);
 
+            //compiles the shader program
             programID = GL.CreateProgram();
             LoadShader("../../shaders/vs.glsl",
              ShaderType.VertexShader, programID, out vsID);
             LoadShader("../../shaders/fs.glsl",
              ShaderType.FragmentShader, programID, out fsID);
             GL.LinkProgram(programID);
+
+            //retrieve attributes from the shader program
             attribute_vpos = GL.GetAttribLocation(programID, "vPosition");
             attribute_vnorm = GL.GetAttribLocation(programID, "vNormal");
             attribute_vcol = GL.GetAttribLocation(programID, "vColor");
@@ -98,8 +111,10 @@ namespace Template
 
             GL.UseProgram(programID);
 
+            //insert the scale matrix
             GL.UniformMatrix4(uniform_sview, false, ref ScaleMatrix);
 
+            //specify which part of the vertex data is equivalent to which attribute in the shader program
             vbo_pos = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.VertexAttribPointer(attribute_vpos, 3, VertexAttribPointerType.Float, false, 24, 0);
@@ -108,14 +123,15 @@ namespace Template
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.VertexAttribPointer(attribute_vnorm, 3, VertexAttribPointerType.Float, false, 24, 12);
 
+            //color is currently not being used inside the shader to emphesize on the diffuse layer.
             vbo_col = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.VertexAttribPointer(attribute_vcol, 3, VertexAttribPointerType.Float, false, 24, 0);
         }
 
-        private void CreateNormalizationMatrix()
+        private void CreateTransformationMatrix()
         {
-            NormalizationMatrix = Matrix4.CreateTranslation(-0.5f, -0.5f, 0);
+            TransformationMatrix = Matrix4.CreateTranslation(-0.5f, -0.5f, 0);
         }
 
         private void CreateScaleMatrix()
@@ -124,12 +140,17 @@ namespace Template
         }
     }
 
+    //class used to read and process the heightmap.
     public static class HeightmapConverter
     {
+        //raw data retrieved from the heightmap.
         private static float[,] h;
+
+        //processed data about the landscape.
         private static float[] vertexData;
 
         public class Triangle{
+            //the vectors define the coordinates of the triangles' vertexes.
             public Vector3 v1;
             public Vector3 v2;
             public Vector3 v3;
@@ -141,6 +162,7 @@ namespace Template
                 this.v3 = v3;
             }
 
+            //calculate the normal of the surface.
             public Vector3 SurfaceNormal
             {
                 get
@@ -152,13 +174,15 @@ namespace Template
             }
         }
 
+        //returns the processed vertexdata.
         public static float[] GetVertexData()
         {
             ReadHeightmapToArray();
 
-             return CalculateVertexDataAndNormals();
+             return CalculateVertexData();
         }
 
+        //reads the heightmap.
         private static void ReadHeightmapToArray()
         {
             Surface map = new Surface("../../assets/heightmap.png");
@@ -167,7 +191,8 @@ namespace Template
                     h[x, y] = ((float)(map.pixels[x + y * 128] & 255)) / 256;
         }
 
-        private static float[] CalculateVertexDataAndNormals()
+        //calculates the location and normal of each vertex.
+        private static float[] CalculateVertexData()
         {
             vertexData = new float[127 * 127 * 2 * 3 * 3 * 3];
 
@@ -176,17 +201,18 @@ namespace Template
             for (int x = 1; x < h.GetLength(0) - 1; x++)
                 for (int y = 1; y < h.GetLength(1) - 1; y++)
                 {
-                    ProcessVertex(x - 1, y - 1, h[x - 1, y - 1], index++);
-                    ProcessVertex(x, y - 1, h[x, y - 1], index++);
-                    ProcessVertex(x - 1, y, h[x - 1, y], index++);
-                    ProcessVertex(x, y - 1, h[x, y - 1], index++);
-                    ProcessVertex(x - 1, y, h[x - 1, y], index++);
-                    ProcessVertex(x, y, h[x, y], index++);
+                    WriteVertexToVertexData(x - 1, y - 1, h[x - 1, y - 1], index++);
+                    WriteVertexToVertexData(x, y - 1, h[x, y - 1], index++);
+                    WriteVertexToVertexData(x - 1, y, h[x - 1, y], index++);
+                    WriteVertexToVertexData(x, y - 1, h[x, y - 1], index++);
+                    WriteVertexToVertexData(x - 1, y, h[x - 1, y], index++);
+                    WriteVertexToVertexData(x, y, h[x, y], index++);
                 }
             return vertexData;
         }
 
-        private static void ProcessVertex(int x, int y, float z, int index)
+        //writes each vertex to the vertexdata
+        private static void WriteVertexToVertexData(int x, int y, float z, int index)
         {
             Vector3 normalVertex = CalculateVertexNormal(x, y);
 
@@ -198,11 +224,13 @@ namespace Template
             vertexData[index * 6 + 5] = normalVertex.Z;
         }
 
+        //calculates the normal of the vertex at position x,y.
         private static Vector3 CalculateVertexNormal(int x, int y)
         {
-            return GetAdjacentTriangleSum(x, y, GetAdjacentVectors(x, y));
+            return GetAdjacentTriangleSum(x, y, GetAdjacentVertexes(x, y));
         }
 
+        //returns the sum of the normal vectors of the adjacent triangles.
         private static Vector3 GetAdjacentTriangleSum(int x, int y, List<Vector3> adjacentVertexes)
         {
             int adjacentTriangleCount = adjacentVertexes.Count;
@@ -227,7 +255,8 @@ namespace Template
             return Vector3.Normalize(adjacentSum);
         }
 
-        private static List<Vector3> GetAdjacentVectors(int x, int y)
+        //returns a list with the adjacent vertexes.
+        private static List<Vector3> GetAdjacentVertexes(int x, int y)
         {
             List<Vector3> adjacentVertexes = new List<Vector3>();
             for (int di = -1; di < 3; di++)
